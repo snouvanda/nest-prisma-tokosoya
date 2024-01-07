@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { GetUsersFilterDto } from './dto/get-users-filter.dto';
+import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -48,7 +49,15 @@ export class UsersService {
 
   update(id: number, updateUserDto: UpdateUserDto) {
     // return `This action updates a #${id} user`;
+
     return { id, updateUserDto };
+  }
+
+  updatePassword(id: number, updateUserPasswordDto: UpdateUserPasswordDto) {
+    const { currentPassword, newPassword } = updateUserPasswordDto;
+    return {
+      message: `ONLY FOR TEST RESPONSE. Password has been changed from ${currentPassword} into ${newPassword}.`,
+    };
   }
 
   remove(id: number) {
