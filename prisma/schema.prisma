@@ -1,0 +1,131 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ENUMS
+enum UserRole {
+  ADMIN
+  AUDITOR
+  CUSTOMER
+  EMPLOYEE
+  SUPPLIER
+  TRANSPORTER
+}
+
+enum UserPrivilege {
+  // Privileges for CUSTOMER, SUPPLIER and TRANSPORTER ONLY.
+  CST_EDITOR // CR, Request data manipulation.
+  CST_MANAGER // CRUD. Grant privilege to its users.
+  CST_VIEWER // Read records.
+
+  // Privileges for EMPLOYEE
+  EMP_MANAGER // CRUD records, Grant/Reject Request(data manipulation)
+  EMP_EDITOR // CR, Request data manipulation
+  EMP_INTERN // CR on limited entities.
+
+  // Privileges for AUDITOR
+  AUD_VIEWER // Read on unlimited entities.
+
+  // Privileges for ADMIN
+  ADM_OWNER // CRUD data, Grant/Reject Request (unlimited user and data)
+  ADM_MANAGER // CRUD data, Grant/Reject Request (limited user and data)
+  ADM_DEVELOPER // CRUD data with remarks/tag for testing purpose, Grant/Reject Request (unlimited user and data with remarks/tag)
+}
+
+enum UserSignUpStatus {
+  PENDING // user signed up
+  OTP_ISSUED // authorized person issued otp to user email, sms, whatsapp
+  WAITING // user signed in with otp. If no corporateId then offered to create one. Now waiting for approval.
+  APPROVED // approved. and user data inserted to User table.
+  REJECTED // rejected.
+}
+
+// TABLES
+
+model UserSignUp {
+  id          Int           @id @default(autoincrement())
+  username    String        @unique @db.VarChar(20)
+  email       String        @unique @db.VarChar(100)
+  fullname    String        @db.VarChar(50)
+  phonesms    String        @db.VarChar(20)
+  whatsapp    String?       @db.VarChar(20)
+  corporateId String?       @db.VarChar(6) // 6 characters, skip if corporate not registered yet.
+  // AUTH
+  role        UserRole
+  privilege   UserPrivilege
+  otp         String?       @db.VarChar(10) // hashed sha512
+
+  status UserSignUpStatus? @default(PENDING)
+
+  // PROCESS
+  processToken String?   @db.VarChar(50) // mandatory except for PENDING status.
+  processedAt  DateTime? @db.Timestamptz(3) //mandatory except for PENDING status.
+  processedBy  String?   @db.VarChar(20) //mandatory except for PENDING status.
+
+  // METADATA
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  createdBy String?  @db.VarChar(20) // valid value: username
+
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  updatedBy String?   @db.VarChar(20) // valid value: username
+
+  deletedAt DateTime? @db.Timestamptz(3)
+  deletedBy String?   @db.VarChar(20) // valid value: username
+}
+
+model UserSignUpProcess {
+  id           Int              @id @default(autoincrement())
+  signUpId     Int              @unique
+  process      UserSignUpStatus
+  description  String
+  processToken String?
+
+  // APPROVAL
+  assignedRole        UserRole?
+  assignedPrivilege   UserPrivilege?
+  assignedCorporateId String? // 
+  isActive            Boolean        @default(true)
+
+  // METADATA
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  createdBy String // valid value: username
+
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  updatedBy String // valid value: username
+
+  deletedAt DateTime? @db.Timestamptz(3)
+  deletedBy String?   @db.VarChar(20) // valid value: username
+}
+
+model User {
+  id          Int    @id @default(autoincrement())
+  username    String @unique @db.VarChar(20)
+  email       String @unique @db.VarChar(100)
+  fullname    String @db.VarChar(50)
+  phone       String @db.VarChar(50)
+  corporateId String @db.VarChar(6)
+
+  // Authentication
+  salt     String? @db.VarChar(100)
+  password String  @db.VarChar(100)
+
+  // Authorization
+  role      UserRole
+  privilege UserPrivilege
+  isActive  Boolean       @default(true)
+
+  // METADATA
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  createdBy String   @db.VarChar(20) // valid value: username who process user registration.
+
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  updatedBy String // valid value: username
+}
