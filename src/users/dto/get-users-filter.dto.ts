@@ -1,15 +1,15 @@
 import { IsEnum, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
-import { UserPrivilege, UserRole } from '@prisma/client';
+import { UserPrivilegeEnum, UserRoleEnum } from '@prisma/client';
 import { Type } from 'class-transformer';
 
 export class GetUsersFilterDto {
   @IsOptional()
-  @IsEnum(UserRole, { message: 'Valid role required' })
-  role: UserRole;
+  @IsEnum(UserRoleEnum, { message: 'Valid role required' })
+  role: UserRoleEnum;
 
   @IsOptional()
-  @IsEnum(UserPrivilege, { message: 'Valid privilege required' })
-  privilege: UserPrivilege;
+  @IsEnum(UserPrivilegeEnum, { message: 'Valid privilege required' })
+  privilege: UserPrivilegeEnum;
 
   @IsOptional()
   @IsNotEmpty()

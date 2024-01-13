@@ -9,7 +9,11 @@ import {
   Length,
   MaxLength,
 } from 'class-validator';
-import { UserPrivilege, UserSignUpStatus, UserRole } from '@prisma/client';
+import {
+  UserPrivilegeEnum,
+  SignUpStatusEnum,
+  UserRoleEnum,
+} from '@prisma/client';
 
 export class DraftUserSignUpDto {
   @IsOptional()
@@ -51,19 +55,19 @@ export class DraftUserSignUpDto {
   corporateId: string;
 
   @IsNotEmpty()
-  @IsEnum(UserRole)
-  // @IsEnum(UserRole, { message: 'Valid role required' })
-  role: UserRole;
+  @IsEnum(UserRoleEnum)
+  // @IsEnum(UserRoleEnum, { message: 'Valid role required' })
+  role: UserRoleEnum;
 
   @IsNotEmpty()
-  @IsEnum(UserPrivilege)
-  // @IsEnum(UserPrivilege, { message: 'Valid privilege required' })
-  privilege: UserPrivilege;
+  @IsEnum(UserPrivilegeEnum)
+  // @IsEnum(UserPrivilegeEnum, { message: 'Valid privilege required' })
+  privilege: UserPrivilegeEnum;
 
   @IsNotEmpty()
-  @IsEnum(UserSignUpStatus)
-  // @IsEnum(UserSignUpStatus, { message: 'Valid request status required' })
-  status: UserSignUpStatus;
+  @IsEnum(SignUpStatusEnum)
+  // @IsEnum(UserSignUpStatusEnum, { message: 'Valid request status required' })
+  status: SignUpStatusEnum;
 
   @IsOptional()
   @IsNotEmpty()

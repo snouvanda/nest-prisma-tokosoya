@@ -17,37 +17,37 @@ import { UpdateUserSignUpDto } from './dto/update-user-signup.dto';
 
 @Controller('users-signup')
 export class UsersSignUpController {
-  constructor(private readonly userSignUpService: UsersSignUpService) {}
+  constructor(private readonly signUpService: UsersSignUpService) {}
 
   @Post()
-  create(@Body(ValidationPipe) createUserSignUpDto: CreateUserSignUpDto) {
-    return this.userSignUpService.create(createUserSignUpDto);
+  create(@Body(ValidationPipe) createSignUpDto: CreateUserSignUpDto) {
+    return this.signUpService.create(createSignUpDto);
   }
 
   @Get()
   findAll(@Query(ValidationPipe) filterDto: GetUserSignUpFiltersDto) {
     if (Object.keys(filterDto).length) {
-      return this.userSignUpService.findAllWithFilter(filterDto);
+      return this.signUpService.findAllWithFilters(filterDto);
     }
-    return this.userSignUpService.findAll();
+    return this.signUpService.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.userSignUpService.findOneById(id);
+    return this.signUpService.findOne(id);
   }
 
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body(ValidationPipe) updateUserSignUpDto: UpdateUserSignUpDto,
+    @Body(ValidationPipe) updateSignUpDto: UpdateUserSignUpDto,
   ) {
-    return this.userSignUpService.update(id, updateUserSignUpDto);
+    return this.signUpService.update(id, updateSignUpDto);
   }
 
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number, username: string = 'Tester') {
     // TODO: get username from JWT
-    return this.userSignUpService.remove(id, username);
+    return this.signUpService.remove(id, username);
   }
 }

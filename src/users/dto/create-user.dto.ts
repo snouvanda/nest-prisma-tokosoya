@@ -9,7 +9,7 @@ import {
   Length,
 } from 'class-validator';
 // import { UserRole } from '../user-enums';
-import { UserPrivilege, UserRole } from '@prisma/client';
+import { UserPrivilegeEnum, UserRoleEnum } from '@prisma/client';
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -38,12 +38,12 @@ export class CreateUserDto {
   phone: string;
 
   @IsNotEmpty()
-  @IsEnum(UserRole, { message: 'Valid role required' })
-  role: UserRole;
+  @IsEnum(UserRoleEnum, { message: 'Valid role required' })
+  role: UserRoleEnum;
 
   @IsNotEmpty()
-  @IsEnum(UserPrivilege, { message: 'Valid privilege required' })
-  privilege: UserPrivilege;
+  @IsEnum(UserPrivilegeEnum, { message: 'Valid privilege required' })
+  privilege: UserPrivilegeEnum;
 
   @IsOptional()
   @IsNumber()

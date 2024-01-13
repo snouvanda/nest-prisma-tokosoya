@@ -11,7 +11,7 @@ datasource db {
 }
 
 // ENUMS
-enum UserRole {
+enum UserRoleEnum {
   ADMIN
   AUDITOR
   CUSTOMER
@@ -20,7 +20,7 @@ enum UserRole {
   TRANSPORTER
 }
 
-enum UserPrivilege {
+enum UserPrivilegeEnum {
   // Privileges for CUSTOMER, SUPPLIER and TRANSPORTER ONLY.
   CST_EDITOR // CR, Request data manipulation.
   CST_MANAGER // CRUD. Grant privilege to its users.
@@ -40,7 +40,7 @@ enum UserPrivilege {
   ADM_DEVELOPER // CRUD data with remarks/tag for testing purpose, Grant/Reject Request (unlimited user and data with remarks/tag)
 }
 
-enum UserSignUpStatus {
+enum SignUpStatusEnum {
   PENDING // user signed up
   OTP_ISSUED // authorized person issued otp to user email, sms, whatsapp
   WAITING // user signed in with otp. If no corporateId then offered to create one. Now waiting for approval.
@@ -48,22 +48,30 @@ enum UserSignUpStatus {
   REJECTED // rejected.
 }
 
+enum SignUpProcessEnum {
+  REVIEW
+  VERIFY
+  OTP_ISSUED
+  APPROVED
+  REJECTED
+}
+
 // TABLES
 
 model UserSignUp {
-  id          Int           @id @default(autoincrement())
-  username    String        @unique @db.VarChar(20)
-  email       String        @unique @db.VarChar(100)
-  fullname    String        @db.VarChar(50)
-  phonesms    String        @db.VarChar(20)
-  whatsapp    String?       @db.VarChar(20)
-  corporateId String?       @db.VarChar(6) // 6 characters, skip if corporate not registered yet.
+  id          Int               @id @default(autoincrement())
+  username    String            @unique @db.VarChar(20)
+  email       String            @unique @db.VarChar(100)
+  fullname    String            @db.VarChar(50)
+  phonesms    String            @db.VarChar(20)
+  whatsapp    String?           @db.VarChar(20)
+  corporateId String?           @db.VarChar(6) // 6 characters, skip if corporate not registered yet.
   // AUTH
-  role        UserRole
-  privilege   UserPrivilege
-  otp         String?       @db.VarChar(10) // hashed sha512
+  role        UserRoleEnum
+  privilege   UserPrivilegeEnum
+  otp         String?           @db.VarChar(10) // hashed sha512
 
-  status UserSignUpStatus? @default(PENDING)
+  status SignUpStatusEnum? @default(PENDING)
 
   // PROCESS
   processToken String?   @db.VarChar(50) // mandatory except for PENDING status.
@@ -82,24 +90,24 @@ model UserSignUp {
 }
 
 model UserSignUpProcess {
-  id           Int              @id @default(autoincrement())
-  signUpId     Int              @unique
-  process      UserSignUpStatus
-  description  String
-  processToken String?
+  id           Int               @id @default(autoincrement())
+  signUpId     Int               @unique
+  process      SignUpProcessEnum @default(REVIEW)
+  description  String?           @db.VarChar(200)
+  processToken String?           @db.VarChar(100)
 
   // APPROVAL
-  assignedRole        UserRole?
-  assignedPrivilege   UserPrivilege?
-  assignedCorporateId String? // 
-  isActive            Boolean        @default(true)
+  role        UserRoleEnum?
+  privilege   UserPrivilegeEnum?
+  corporateId String?            @db.VarChar(6)
+  isActive    Boolean            @default(false)
 
   // METADATA
   createdAt DateTime @default(now()) @db.Timestamptz(3)
-  createdBy String // valid value: username
+  createdBy String?  @db.VarChar(20) // valid value: username
 
-  updatedAt DateTime @updatedAt @db.Timestamptz(3)
-  updatedBy String // valid value: username
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  updatedBy String?   @db.VarChar(20) // valid value: username
 
   deletedAt DateTime? @db.Timestamptz(3)
   deletedBy String?   @db.VarChar(20) // valid value: username
@@ -118,9 +126,9 @@ model User {
   password String  @db.VarChar(100)
 
   // Authorization
-  role      UserRole
-  privilege UserPrivilege
-  isActive  Boolean       @default(true)
+  role      UserRoleEnum
+  privilege UserPrivilegeEnum
+  isActive  Boolean           @default(true)
 
   // METADATA
   createdAt DateTime @default(now()) @db.Timestamptz(3)

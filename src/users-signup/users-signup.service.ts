@@ -2,7 +2,11 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserSignUpDto } from './dto/create-user-signup.dto';
 import { ReadUserSignUpDto } from './dto/read-user-signup.dto';
 import { GetUserSignUpFiltersDto } from './dto/get-user-signup-filters.dto';
-import { UserPrivilege, UserRole, UserSignUpStatus } from '@prisma/client';
+import {
+  UserPrivilegeEnum,
+  UserRoleEnum,
+  SignUpStatusEnum,
+} from '@prisma/client';
 import { UpdateUserSignUpDto } from './dto/update-user-signup.dto';
 import { merge } from 'lodash';
 import { DbService } from 'src/db/db.service';
@@ -11,17 +15,19 @@ import { DbService } from 'src/db/db.service';
 export class UsersSignUpService {
   constructor(private readonly dbService: DbService) {}
 
-  UserSignUpReturnFields = {
+  SignUpReturnFields = {
     id: true,
     username: true,
     email: true,
     fullname: true,
-    whatsapp: true,
     phonesms: true,
+    whatsapp: true,
     corporateId: true,
     role: true,
     privilege: true,
     status: true,
+    processedAt: true,
+    processedBy: true,
     createdAt: true,
     createdBy: true,
     updatedAt: true,
@@ -31,23 +37,27 @@ export class UsersSignUpService {
   };
 
   async create(
-    createUserSignUpDto: CreateUserSignUpDto,
+    createSignUpDto: CreateUserSignUpDto,
     formatReturnTimeZone: boolean = true,
   ): Promise<ReadUserSignUpDto> {
-    const userSignUp = await this.dbService.userSignUp.create({
-      data: createUserSignUpDto,
-      select: this.UserSignUpReturnFields,
+    const signUp = await this.dbService.userSignUp.create({
+      data: createSignUpDto,
+      select: this.SignUpReturnFields,
     });
 
     if (formatReturnTimeZone) {
       return {
-        ...userSignUp,
-        createdAt: this.dbService.formatTimeZone(userSignUp.createdAt),
-        updatedAt: this.dbService.formatTimeZone(userSignUp.updatedAt),
+        ...signUp,
+        createdAt: signUp.createdAt
+          ? this.dbService.formatTimeZone(signUp.createdAt)
+          : null,
+        updatedAt: signUp.updatedAt
+          ? this.dbService.formatTimeZone(signUp.updatedAt)
+          : null,
       };
     }
 
-    return userSignUp;
+    return signUp;
   }
 
   async findAll(
@@ -57,36 +67,41 @@ export class UsersSignUpService {
     const recordState =
       this.dbService.getRecordStateCriteria(excludeDeletedRecord);
 
-    const userSignUp = await this.dbService.userSignUp.findMany({
-      select: this.UserSignUpReturnFields,
+    const signUps = await this.dbService.userSignUp.findMany({
       where: recordState,
+      select: this.SignUpReturnFields,
     });
 
     if (formatReturnTimeZone) {
-      if (userSignUp) {
-        const userSignUpF = userSignUp.map((userSignUp) => {
+      if (signUps) {
+        const signUps_ = signUps.map((signUp) => {
           return {
-            ...userSignUp,
-            createdAt: this.dbService.formatTimeZone(userSignUp.createdAt),
-            updatedAt: this.dbService.formatTimeZone(userSignUp.updatedAt),
+            ...signUp,
+            createdAt: signUp.createdAt
+              ? this.dbService.formatTimeZone(signUp.createdAt)
+              : null,
+            updatedAt: signUp.updatedAt
+              ? this.dbService.formatTimeZone(signUp.updatedAt)
+              : null,
           };
         });
-        return userSignUpF;
+        return signUps_;
       }
     }
-    return userSignUp;
+    return signUps;
   }
 
-  async findAllWithFilter(
+  async findAllWithFilters(
     filterDto: GetUserSignUpFiltersDto,
     formatReturnTimeZone: boolean = true,
     excludeDeletedRecord: boolean = true,
   ): Promise<ReadUserSignUpDto[]> {
     const { status, role, privilege, corporateId } = filterDto;
+
     type Criterias = {
-      status: UserSignUpStatus;
-      role: UserRole;
-      privilege: UserPrivilege;
+      status: SignUpStatusEnum;
+      role: UserRoleEnum;
+      privilege: UserPrivilegeEnum;
       corporateId: string;
     };
 
@@ -107,28 +122,34 @@ export class UsersSignUpService {
     const recordState =
       this.dbService.getRecordStateCriteria(excludeDeletedRecord);
 
-    const usersSignUp = await this.dbService.userSignUp.findMany({
+    const signUps = await this.dbService.userSignUp.findMany({
       where: merge(criterias, recordState),
-      select: this.UserSignUpReturnFields,
+      select: this.SignUpReturnFields,
     });
 
     if (formatReturnTimeZone) {
-      if (usersSignUp) {
-        const usersSignUpF = usersSignUp.map((userSignUp) => {
+      if (signUps) {
+        const signUps_ = signUps.map((signUp) => {
           return {
-            ...userSignUp,
-            createdAt: this.dbService.formatTimeZone(userSignUp.createdAt),
-            updatedAt: this.dbService.formatTimeZone(userSignUp.updatedAt),
-            deletedAt: this.dbService.formatTimeZone(userSignUp.deletedAt),
+            ...signUp,
+            createdAt: signUp.createdAt
+              ? this.dbService.formatTimeZone(signUp.createdAt)
+              : null,
+            updatedAt: signUp.updatedAt
+              ? this.dbService.formatTimeZone(signUp.updatedAt)
+              : null,
+            deletedAt: signUp.deletedAt
+              ? this.dbService.formatTimeZone(signUp.deletedAt)
+              : null,
           };
         });
-        return usersSignUpF;
+        return signUps_;
       }
     }
-    return usersSignUp;
+    return signUps;
   }
 
-  async findOneById(
+  async findOne(
     id: number,
     formatReturnTimeZone: boolean = true,
     excludeDeletedRecord: boolean = true,
@@ -136,46 +157,58 @@ export class UsersSignUpService {
     const recordState =
       this.dbService.getRecordStateCriteria(excludeDeletedRecord);
 
-    const userSignUp = await this.dbService.userSignUp.findUnique({
+    const signUp = await this.dbService.userSignUp.findUnique({
       where: merge({ id }, recordState),
-      select: this.UserSignUpReturnFields,
+      select: this.SignUpReturnFields,
     });
 
     if (formatReturnTimeZone) {
-      if (userSignUp) {
+      if (signUp) {
         return {
-          ...userSignUp,
-          createdAt: this.dbService.formatTimeZone(userSignUp.createdAt),
-          updatedAt: this.dbService.formatTimeZone(userSignUp.updatedAt),
-          deletedAt: this.dbService.formatTimeZone(userSignUp.deletedAt),
+          ...signUp,
+          createdAt: signUp.createdAt
+            ? this.dbService.formatTimeZone(signUp.createdAt)
+            : null,
+          updatedAt: signUp.updatedAt
+            ? this.dbService.formatTimeZone(signUp.updatedAt)
+            : null,
+          deletedAt: signUp.deletedAt
+            ? this.dbService.formatTimeZone(signUp.deletedAt)
+            : null,
         };
       }
-      return userSignUp;
+      return signUp;
     }
   }
 
   async update(
     id: number,
-    updateUserSignUpDto: UpdateUserSignUpDto,
+    updateSignUpDto: UpdateUserSignUpDto,
     formatReturnTimeZone: boolean = true,
   ): Promise<ReadUserSignUpDto> {
-    const userSignUpUpdate = await this.dbService.userSignUp.update({
+    const signUp = await this.dbService.userSignUp.update({
       where: { id },
-      data: updateUserSignUpDto,
-      select: this.UserSignUpReturnFields,
+      data: updateSignUpDto,
+      select: this.SignUpReturnFields,
     });
 
     if (formatReturnTimeZone) {
-      if (userSignUpUpdate) {
+      if (signUp) {
         return {
-          ...userSignUpUpdate,
-          createdAt: this.dbService.formatTimeZone(userSignUpUpdate.createdAt),
-          updatedAt: this.dbService.formatTimeZone(userSignUpUpdate.updatedAt),
-          deletedAt: this.dbService.formatTimeZone(userSignUpUpdate.deletedAt),
+          ...signUp,
+          createdAt: signUp.createdAt
+            ? this.dbService.formatTimeZone(signUp.createdAt)
+            : null,
+          updatedAt: signUp.updatedAt
+            ? this.dbService.formatTimeZone(signUp.updatedAt)
+            : null,
+          deletedAt: signUp.deletedAt
+            ? this.dbService.formatTimeZone(signUp.deletedAt)
+            : null,
         };
       }
     }
-    return userSignUpUpdate;
+    return signUp;
   }
 
   async remove(
@@ -183,27 +216,29 @@ export class UsersSignUpService {
     username: string,
     formatReturnTimeZone: boolean = true,
   ): Promise<ReadUserSignUpDto> {
-    const found = this.findOneById(id);
+    const found = this.findOne(id);
 
     if (!found) {
       throw new HttpException('UserSignUp not found.', HttpStatus.NOT_FOUND);
     }
 
-    const userSignUpRemove = await this.dbService.userSignUp.update({
+    const signUp = await this.dbService.userSignUp.update({
       where: { id },
       data: { deletedAt: new Date(), deletedBy: username },
       select: { id: true, deletedAt: true, deletedBy: true },
     });
 
     if (formatReturnTimeZone) {
-      if (userSignUpRemove) {
+      if (signUp) {
         return {
-          ...userSignUpRemove,
+          ...signUp,
 
-          deletedAt: this.dbService.formatTimeZone(userSignUpRemove.deletedAt),
+          deletedAt: signUp.deletedAt
+            ? this.dbService.formatTimeZone(signUp.deletedAt)
+            : null,
         };
       }
     }
-    return userSignUpRemove;
+    return signUp;
   }
 }
