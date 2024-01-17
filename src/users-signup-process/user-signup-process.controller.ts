@@ -14,7 +14,9 @@ import { UserSignUpProcessService } from './user-signup-process.service';
 import { CreateUserSignUpProcessDto } from './dto/create-user-signup-process.dto';
 import { UpdateUserSignUpProcessDto } from './dto/update-user-signup-process.dto';
 import { GetUserSignUpProcessFiltersDto } from './dto/get-user-signup-process-filters.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('signUpProcess')
 @Controller('users-signup-process')
 export class UserSignUpProcessController {
   constructor(

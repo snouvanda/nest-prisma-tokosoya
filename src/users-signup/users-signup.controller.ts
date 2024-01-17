@@ -14,7 +14,9 @@ import { UsersSignUpService } from './users-signup.service';
 import { CreateUserSignUpDto } from './dto/create-user-signup.dto';
 import { GetUserSignUpFiltersDto } from './dto/get-user-signup-filters.dto';
 import { UpdateUserSignUpDto } from './dto/update-user-signup.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('signUp')
 @Controller('users-signup')
 export class UsersSignUpController {
   constructor(private readonly signUpService: UsersSignUpService) {}

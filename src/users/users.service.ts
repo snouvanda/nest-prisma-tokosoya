@@ -1,45 +1,52 @@
 import { Injectable } from '@nestjs/common';
 // import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-// import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 // import { UpdateUserDto } from './dto/update-user.dto';
 // import { GetUsersFilterDto } from './dto/get-users-filter.dto';
 // import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 // import { DatabaseService } from 'src/database/database.service';
-// import { ReadUserDto } from './dto/read-user.dto';
+import { DbService } from 'src/db/db.service';
+import { User } from './types';
 // import { UserPrivilege, UserRole } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
-  // constructor(private readonly dbService: DatabaseService) {}
-  // UserReturnFields = {
-  //   id: true,
-  //   username: true,
-  //   email: true,
-  //   fullname: true,
-  //   phone: true,
-  //   role: true,
-  //   privilege: true,
-  //   corporateId: true,
-  //   createdAt: true,
-  //   updatedAt: true,
-  // };
-  // async create(
-  //   createUserDto: CreateUserDto,
-  //   formatReturnTimeZone: boolean = true,
-  // ): Promise<ReadUserDto> {
-  //   const user = await this.dbService.user.create({
-  //     data: createUserDto,
-  //     select: this.UserReturnFields,
-  //   });
-  //   if (formatReturnTimeZone) {
-  //     return {
-  //       ...user,
-  //       createdAt: this.dbService.formatTimeZone(user.createdAt),
-  //       updatedAt: this.dbService.formatTimeZone(user.updatedAt),
-  //     };
-  //   }
-  //   return user;
-  // }
+  constructor(private readonly dbService: DbService) {}
+  UserReturnFields = {
+    id: true,
+    username: true,
+    email: true,
+    fullname: true,
+    phonesms: true,
+    whatsapp: true,
+    corporateId: true,
+    // salt: true,
+    // password: true,
+    // role: true,
+    privilege: true,
+    isActive: true,
+    createdAt: true,
+    createdBy: true,
+    updatedAt: true,
+    updatedBy: true,
+  };
+  async create(
+    createUserDto: CreateUserDto,
+    formatReturnTimeZone: boolean = true,
+  ): Promise<User> {
+    const user = await this.dbService.user.create({
+      data: createUserDto,
+      // select: this.UserReturnFields,
+    });
+    if (formatReturnTimeZone) {
+      return {
+        ...user,
+        createdAt: this.dbService.formatTimeZone(user.createdAt),
+        updatedAt: this.dbService.formatTimeZone(user.updatedAt),
+      };
+    }
+    return user;
+  }
   // async findAll(formatReturnTimeZone: boolean = true): Promise<ReadUserDto[]> {
   //   const users = await this.dbService.user.findMany({
   //     select: this.UserReturnFields,
