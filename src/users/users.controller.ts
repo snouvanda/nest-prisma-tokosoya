@@ -1,30 +1,32 @@
 import {
   Controller,
   // Get,
-  // Post,
-  // Body,
+  Post,
+  Body,
   // Patch,
   // Param,
   // Delete,
   // Query,
   // ParseIntPipe,
-  // ValidationPipe,
+  ValidationPipe,
   // HttpException,
   // HttpStatus,
 } from '@nestjs/common';
-// import { UsersService } from './users.service';
-// import { CreateUserDto } from './dto/create-user.dto';
+import { UsersService } from './users.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { ApiTags } from '@nestjs/swagger';
 // import { UpdateUserDto } from './dto/update-user.dto';
 // import { GetUsersFilterDto } from './dto/get-users-filter.dto';
 // import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 
+@ApiTags('users')
 @Controller('users')
 export class UsersController {
-  // constructor(private readonly usersService: UsersService) {}
-  // @Post()
-  // create(@Body(ValidationPipe) createUserDto: CreateUserDto) {
-  //   return this.usersService.create(createUserDto);
-  // }
+  constructor(private readonly usersService: UsersService) {}
+  @Post()
+  create(@Body(ValidationPipe) createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto);
+  }
   // @Get()
   // findAll(@Query(ValidationPipe) filterDto: GetUsersFilterDto) {
   //   if (Object.keys(filterDto).length) {
